@@ -1,0 +1,28 @@
+# Dashboard cards for one locker (replace dzi11m with your locker code, lowercase).
+
+# Current conditions
+type: weather-forecast
+entity: weather.inpost_air_dzi11m
+show_forecast: false
+---
+# Temperature history
+type: history-graph
+title: Temperatura
+hours_to_show: 48
+entities:
+  - entity: sensor.inpost_air_dzi11m_temperature
+---
+# Lockers on a map (the temperature sensor carries latitude/longitude)
+type: map
+entities:
+  - entity: sensor.inpost_air_dzi11m_temperature
+hours_to_show: 0
+---
+# Air quality
+type: entities
+title: Powietrze
+entities:
+  - sensor.inpost_air_dzi11m_pm2_5
+  - sensor.inpost_air_dzi11m_pm10
+  - sensor.inpost_air_dzi11m_air_quality_index
+  - sensor.inpost_air_dzi11m_measurement_window_end

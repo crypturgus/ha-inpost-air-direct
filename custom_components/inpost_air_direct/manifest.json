@@ -1,12 +1,14 @@
 {
   "domain": "inpost_air_direct",
   "name": "InPost Air Direct",
-  "codeowners": ["@crypturgus"],
+  "codeowners": [
+    "@crypturgus"
+  ],
   "config_flow": true,
   "documentation": "https://github.com/crypturgus/ha-inpost-air-direct",
   "integration_type": "device",
   "iot_class": "cloud_polling",
   "issue_tracker": "https://github.com/crypturgus/ha-inpost-air-direct/issues",
   "requirements": [],
-  "version": "0.2.0"
+  "version": "0.3.0"
 }

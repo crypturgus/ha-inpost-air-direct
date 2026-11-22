@@ -3,34 +3,96 @@
     "step": {
       "user": {
         "title": "Add InPost Air locker",
-        "description": "Enter the Paczkomat identifier (e.g. DZI11M).",
-        "data": {"locker_code": "Locker code"},
-        "data_description": {"locker_code": "Code printed on the Paczkomat or shown on the InPost map."}
+        "description": "How do you want to find the Paczkomat?",
+        "menu_options": {
+          "map": "On a map (nearest, with current temperature)",
+          "city": "By city",
+          "code": "By locker code"
+        }
+      },
+      "map": {
+        "title": "Find lockers on the map",
+        "description": "Move the pin and set the radius. Up to {limit} nearest lockers with air sensors are checked live; only those reporting a fresh temperature are listed.",
+        "data": {
+          "location": "Location"
+        }
+      },
+      "city": {
+        "title": "Find lockers by city",
+        "description": "Letter case and Polish characters do not matter (e.g. dzierzoniow).",
+        "data": {
+          "query": "City"
+        }
+      },
+      "code": {
+        "title": "Enter locker code",
+        "description": "Paczkomat code, e.g. DZI11M.",
+        "data": {
+          "locker_code": "Locker code"
+        },
+        "data_description": {
+          "locker_code": "Code printed on the Paczkomat or shown on the InPost map."
+        }
+      },
+      "pick": {
+        "title": "Choose a locker",
+        "description": "Found {count} lockers ({hidden} skipped: no fresh temperature). The selected locker is checked live before it is added.",
+        "data": {
+          "locker_code": "Locker"
+        }
+      },
+      "stale": {
+        "title": "Old measurements",
+        "description": "Locker {code} last reported data at {last} ({age} ago). Its sensors may be broken. Submit to add it anyway — entities stay unavailable until fresh data arrives."
       }
     },
     "error": {
       "cannot_connect": "Cannot reach the InPost API. Try again later.",
+      "catalog_unavailable": "Cannot download the list of lockers. Try again later or add the locker by code.",
       "invalid_code": "Invalid locker code (3–32 letters and digits).",
       "not_found": "This locker does not exist or has no air sensors.",
+      "no_lockers_found": "No lockers with air sensors found.",
+      "no_working_lockers": "No nearby locker reports a fresh temperature. Increase the radius or move the pin.",
+      "no_temperature": "This locker does not report a temperature.",
       "unknown": "Unexpected error, see the Home Assistant log."
     },
-    "abort": {"already_configured": "This locker is already configured."}
+    "abort": {
+      "already_configured": "This locker is already configured."
+    }
   },
   "options": {
     "step": {
       "init": {
         "title": "InPost Air options",
-        "data": {"scan_interval": "Polling interval"},
-        "data_description": {"scan_interval": "How often to query the API, in minutes. The API publishes aggregated values, so polling more often than every few minutes brings little."}
+        "data": {
+          "scan_interval": "Polling interval"
+        },
+        "data_description": {
+          "scan_interval": "How often to query the API, in minutes. The API publishes aggregated values, so polling more often than every few minutes brings little."
+        }
       }
     }
   },
   "entity": {
     "sensor": {
-      "air_index": {"name": "Air quality index"},
-      "pm25_who": {"name": "PM2.5 of WHO limit"},
-      "pm10_who": {"name": "PM10 of WHO limit"},
-      "measurement_end": {"name": "Measurement window end"}
+      "air_index": {
+        "name": "Air quality index"
+      },
+      "pm25_who": {
+        "name": "PM2.5 of WHO limit"
+      },
+      "pm10_who": {
+        "name": "PM10 of WHO limit"
+      },
+      "no2_who": {
+        "name": "NO2 of WHO limit"
+      },
+      "o3_who": {
+        "name": "O3 of WHO limit"
+      },
+      "measurement_end": {
+        "name": "Measurement window end"
+      }
     }
   }
 }

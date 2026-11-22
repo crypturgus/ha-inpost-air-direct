@@ -1,0 +1,16 @@
+{
+  "count": 6, "page": 1, "per_page": 5000, "total_pages": 1,
+  "items": [
+    {"name": "DZI11M", "location": {"latitude": 50.72455, "longitude": 16.64585}, "location_description": "Przy warsztacie samochodowym",
+     "address_details": {"city": "Dzierżoniów", "province": "dolnośląskie", "post_code": "58-200", "street": "Kopernika", "building_number": "11a"}, "air_index_level": "GOOD"},
+    {"name": "DZI06N", "location": {"latitude": 50.7300, "longitude": 16.6500},
+     "address_details": {"city": "Dzierżoniów", "province": "dolnośląskie", "street": "Rynek", "building_number": "1"}, "air_index_level": null},
+    {"name": "DZI99M", "location": {"latitude": 50.7280, "longitude": 16.6520},
+     "address_details": {"city": "Dzierżoniów", "province": "dolnośląskie", "street": "Świdnicka", "building_number": "5"}, "air_index_level": "VERY_GOOD"},
+    {"name": "BIE01M", "location": {"latitude": 50.6850, "longitude": 16.6200},
+     "address_details": {"city": "Bielawa", "province": "dolnośląskie", "street": "Wolności", "building_number": "2"}, "air_index_level": "MODERATE"},
+    {"name": "WAW01M", "location": {"latitude": 52.2297, "longitude": 21.0122},
+     "address_details": {"city": "Warszawa", "province": "mazowieckie", "street": "Marszałkowska", "building_number": "1"}, "air_index_level": "GOOD"},
+    {"name": "BROKEN", "location": {}, "air_index_level": "GOOD"}
+  ]
+}

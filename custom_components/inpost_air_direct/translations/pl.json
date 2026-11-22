@@ -3,34 +3,96 @@
     "step": {
       "user": {
         "title": "Dodaj Paczkomat InPost Air",
-        "description": "Podaj kod Paczkomatu (np. DZI11M).",
-        "data": {"locker_code": "Kod Paczkomatu"},
-        "data_description": {"locker_code": "Kod widoczny na Paczkomacie lub na mapie InPost."}
+        "description": "Jak chcesz znaleźć Paczkomat?",
+        "menu_options": {
+          "map": "Na mapie (najbliższe, z aktualną temperaturą)",
+          "city": "Według miejscowości",
+          "code": "Według kodu Paczkomatu"
+        }
+      },
+      "map": {
+        "title": "Szukaj na mapie",
+        "description": "Przesuń pinezkę i ustaw promień. Sprawdzam na żywo do {limit} najbliższych Paczkomatów z czujnikami; na liście są tylko te, które podają świeżą temperaturę.",
+        "data": {
+          "location": "Lokalizacja"
+        }
+      },
+      "city": {
+        "title": "Szukaj według miejscowości",
+        "description": "Wielkość liter i polskie znaki nie mają znaczenia (np. dzierzoniow).",
+        "data": {
+          "query": "Miejscowość"
+        }
+      },
+      "code": {
+        "title": "Podaj kod Paczkomatu",
+        "description": "Kod Paczkomatu, np. DZI11M.",
+        "data": {
+          "locker_code": "Kod Paczkomatu"
+        },
+        "data_description": {
+          "locker_code": "Kod widoczny na Paczkomacie lub na mapie InPost."
+        }
+      },
+      "pick": {
+        "title": "Wybierz Paczkomat",
+        "description": "Znaleziono {count} Paczkomatów (pominięto {hidden}: brak świeżej temperatury). Wybrany Paczkomat jest sprawdzany na żywo przed dodaniem.",
+        "data": {
+          "locker_code": "Paczkomat"
+        }
+      },
+      "stale": {
+        "title": "Stare pomiary",
+        "description": "Paczkomat {code} ostatnio przesłał dane {last} ({age} temu). Czujniki mogą nie działać. Zatwierdź, aby dodać go mimo to — encje będą niedostępne, dopóki nie pojawią się świeże dane."
       }
     },
     "error": {
       "cannot_connect": "Brak połączenia z API InPost. Spróbuj ponownie później.",
+      "catalog_unavailable": "Nie udało się pobrać listy Paczkomatów. Spróbuj później lub dodaj Paczkomat po kodzie.",
       "invalid_code": "Nieprawidłowy kod Paczkomatu (3–32 litery i cyfry).",
       "not_found": "Ten Paczkomat nie istnieje lub nie ma czujników powietrza.",
+      "no_lockers_found": "Nie znaleziono Paczkomatów z czujnikami.",
+      "no_working_lockers": "Żaden pobliski Paczkomat nie podaje świeżej temperatury. Zwiększ promień lub przesuń pinezkę.",
+      "no_temperature": "Ten Paczkomat nie podaje temperatury.",
       "unknown": "Nieoczekiwany błąd, sprawdź log Home Assistant."
     },
-    "abort": {"already_configured": "Ten Paczkomat został już dodany."}
+    "abort": {
+      "already_configured": "Ten Paczkomat został już dodany."
+    }
   },
   "options": {
     "step": {
       "init": {
         "title": "Opcje InPost Air",
-        "data": {"scan_interval": "Interwał odpytywania"},
-        "data_description": {"scan_interval": "Jak często pytać API, w minutach. API publikuje wartości uśrednione, więc odpytywanie częściej niż co kilka minut niewiele daje."}
+        "data": {
+          "scan_interval": "Interwał odpytywania"
+        },
+        "data_description": {
+          "scan_interval": "Jak często pytać API, w minutach. API publikuje wartości uśrednione, więc odpytywanie częściej niż co kilka minut niewiele daje."
+        }
       }
     }
   },
   "entity": {
     "sensor": {
-      "air_index": {"name": "Indeks jakości powietrza"},
-      "pm25_who": {"name": "PM2.5 względem normy WHO"},
-      "pm10_who": {"name": "PM10 względem normy WHO"},
-      "measurement_end": {"name": "Koniec okna pomiaru"}
+      "air_index": {
+        "name": "Indeks jakości powietrza"
+      },
+      "pm25_who": {
+        "name": "PM2.5 względem normy WHO"
+      },
+      "pm10_who": {
+        "name": "PM10 względem normy WHO"
+      },
+      "no2_who": {
+        "name": "NO2 względem normy WHO"
+      },
+      "o3_who": {
+        "name": "O3 względem normy WHO"
+      },
+      "measurement_end": {
+        "name": "Koniec okna pomiaru"
+      }
     }
   }
 }

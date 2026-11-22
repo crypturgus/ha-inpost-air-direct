@@ -1,0 +1,25 @@
+# Frost warning based on the locker temperature.
+- alias: "Przymrozek przy Paczkomacie"
+  triggers:
+    - trigger: numeric_state
+      entity_id: sensor.inpost_air_dzi11m_temperature
+      below: 0
+      for: "00:15:00"
+  actions:
+    - action: notify.notify
+      data:
+        message: >
+          Temperatura przy Paczkomacie DZI11M:
+          {{ states('sensor.inpost_air_dzi11m_temperature') }} °C
+
+# Alert when the locker stops reporting (entities become unavailable on stale data).
+- alias: "Paczkomat przestał wysyłać pomiary"
+  triggers:
+    - trigger: state
+      entity_id: sensor.inpost_air_dzi11m_temperature
+      to: unavailable
+      for: "03:00:00"
+  actions:
+    - action: notify.notify
+      data:
+        message: "InPost Air DZI11M: brak świeżych pomiarów od 3 godzin."

@@ -1,57 +1,81 @@
 # InPost Air Direct — Home Assistant
 
-Independent custom integration for readings from InPost parcel locker (Paczkomat) air sensors.
+[Polski](README.pl.md) | English
 
-> **Unofficial / experimental.** Not affiliated with or endorsed by InPost. Uses an undocumented endpoint that may change or disappear.
+Custom integration for **temperature** and air-quality readings from sensors mounted on InPost parcel lockers (Paczkomat) in Poland — about 4,000 lockers have them.
 
-## Data source
+> **Unofficial.** Not affiliated with or endorsed by InPost. Uses undocumented endpoints that may change or disappear at any time.
 
-`GET https://api-pl-points.easypack24.net/v1/points/{LOCKER_CODE}/air-sensors`
+## Features
 
-Values are returned as published by the API: an aggregate over a rolling window (observed ≈75 minutes), **not instantaneous readings**.
-
-## Entities
-
-One device per locker. Only sensors the locker actually reports are created.
-
-| Entity | Unit | Notes |
-|---|---|---|
-| Temperature, Humidity, Atmospheric pressure | °C, %, hPa | |
-| PM1, PM2.5, PM4, PM10 | μg/m³ | attribute `level` (e.g. `GOOD`, `VERY_GOOD`) when the API provides it |
-| Air quality index | — | attributes `level`, `index` (index name, e.g. `PIJP`) |
-| PM2.5 / PM10 of WHO limit | % | percent of the WHO limit; attribute `standard` |
-| Measurement window end | timestamp | diagnostic; attribute `period_from` |
-
-**Stale data:** if the measurement window ended more than 2 hours ago (the API keeps serving the last aggregate when a locker stops reporting), measurement entities become unavailable and a warning is logged. *Measurement window end* stays available so you can see when the last data arrived.
+- **Find a locker on a map** (Home Assistant's built-in map: drag the pin, set the radius). The nearest lockers are checked live and only those reporting a **fresh temperature** are listed, with the current temperature, distance and measurement age.
+- Or search **by city** (letter case and Polish characters don't matter: `lodz` finds Łódź) or enter the **locker code**.
+- A locker must report a temperature before it is added; lockers whose last data is old require confirmation.
+- Sensors: temperature, humidity, pressure, PM1, PM2.5, PM4, PM10, NO2, O3 (only what the locker reports), air quality index, % of WHO limits, measurement window end.
+- A **weather entity** per locker (temperature, humidity, pressure) for weather cards.
+- **Stale-data detection:** when the last measurement window ended more than 2 hours ago, measurement entities become unavailable (some lockers keep serving data that is days old).
+- Lockers can be shown on a Map card (the temperature sensor carries `latitude`/`longitude`).
+- UI configuration, multiple lockers, adjustable polling interval (default 5 min), diagnostics download.
 
 ## Requirements
 
 Home Assistant **2025.10** or newer.
 
-## Installation using HACS (custom repository)
+## Installation (HACS)
 
-1. In HACS, add `https://github.com/crypturgus/ha-inpost-air-direct` as a **custom repository**, category **Integration**.
+1. HACS → ⋮ → **Custom repositories** → add `https://github.com/crypturgus/ha-inpost-air-direct`, category **Integration**.
 2. Install **InPost Air Direct** and restart Home Assistant.
-3. Settings → Devices & services → Add integration → **InPost Air Direct**.
-4. Enter a locker code such as `DZI11M`. Repeat to add other lockers.
+3. Settings → Devices & services → **Add integration** → **InPost Air Direct**.
+4. Choose **On a map**, **By city** or **By locker code**, then pick a locker. Repeat for more lockers.
 
-For local testing, copy `custom_components/inpost_air_direct` into HA's `/config/custom_components/` and restart HA.
+Manual installation: copy `custom_components/inpost_air_direct` into `/config/custom_components/` and restart.
 
-## Options
+## Entities
 
-Settings → Devices & services → InPost Air Direct → **Configure**: polling interval (1–60 min, default 5).
+Entity IDs below are for locker `DZI11M`; only values the locker reports are created.
 
-## Behavior
+| Entity | Example ID | Notes |
+|---|---|---|
+| Weather | `weather.inpost_air_dzi11m` | temperature, humidity, pressure; no forecast/condition |
+| Temperature | `sensor.inpost_air_dzi11m_temperature` | °C; attributes `latitude`, `longitude`, `address` |
+| Humidity, Pressure | `..._humidity`, `..._atmospheric_pressure` | %, hPa |
+| PM1, PM2.5, PM4, PM10, NO2, O3 | `..._pm2_5`, ... | μg/m³; attribute `level` (e.g. `GOOD`) |
+| Air quality index | `..._air_quality_index` | attributes `level`, `index`, `sensor_generation` |
+| % of WHO limit | `..._pm2_5_of_who_limit`, ... | |
+| Measurement window end | `..._measurement_window_end` | diagnostic; stays available when data is stale |
 
-- One configuration entry per locker; duplicates are rejected.
-- Setup distinguishes a non-existent locker / locker without air sensors (HTTP 404) from connection errors.
-- If the API is down at startup, Home Assistant retries setup automatically; failed updates mark entities unavailable until recovery.
-- Diagnostics download (device page → ⋮ → Download diagnostics) includes the last raw API response.
-- No extra dependencies, scraping or Docker containers; no attempts to bypass rate limits or access restrictions.
+## Example configuration
+
+Configuration is done in the UI. Dashboard and automation examples: [`examples/dashboard.yaml`](examples/dashboard.yaml), [`examples/automations.yaml`](examples/automations.yaml).
+
+```yaml
+type: history-graph
+title: Temperature
+hours_to_show: 48
+entities:
+  - entity: sensor.inpost_air_dzi11m_temperature
+```
+
+## Good to know
+
+- Values are **averages over a rolling window of about 60–75 minutes**, not instantaneous readings.
+- Temperatures of neighbouring lockers can differ by a few °C (placement, sun, wall).
+- There are two sensor hardware generations (see the device model). They report different values (gen. 1: no PM4, sometimes NO2/O3) and use **different scales for the air quality index** and different WHO limits — don't compare the index between lockers.
+- InPost's catalog flag for air sensors does not guarantee they work; that is why lockers are checked live.
+
+## How it talks to the API
+
+| Purpose | Endpoint | When |
+|---|---|---|
+| Measurements | `GET api-pl-points.easypack24.net/v1/points/{code}/air-sensors` | every polling interval, one request per locker |
+| Locker catalog | `GET api-shipx-pl.easypack24.net/v1/points` (paged, reduced fields) | only while adding a locker, at most once a week (cached in HA storage) |
+| Locker location | same endpoint, `name={code}` | once when a locker is added by code |
+
+The server cannot filter by air sensors and its city filter needs the exact spelling, so the catalog of lockers with air sensors is cached and searched locally. Catalog requests are retried with exponential backoff and honour `Retry-After`; measurement errors simply mark entities unavailable until the next successful poll. No scraping, browser emulation or extra containers.
 
 ## Coexistence
 
-Uses domain `inpost_air_direct`, so it can coexist with the CyberDeer `inpost_air` integration. Entity IDs/history **are not migrated**. Disable or remove the old integration only after checking the new one.
+Domain `inpost_air_direct` can run side by side with the CyberDeer `inpost_air` integration. Entity history is not migrated.
 
 ## Development
 
@@ -60,4 +84,4 @@ python3.14 -m venv .venv && .venv/bin/pip install -r requirements_test.txt
 .venv/bin/python -m pytest -q
 ```
 
-Tests run against a real Home Assistant test harness (`pytest-homeassistant-custom-component`) using a captured API response. CI additionally runs `hassfest` and the HACS validation action.
+Tests use the Home Assistant test harness with captured API responses. CI runs `hassfest`, HACS validation and the tests (also weekly). Releases: bump `version` in `manifest.json`, add a `CHANGELOG.md` section, push a `vX.Y.Z` tag — the release workflow creates the GitHub release.

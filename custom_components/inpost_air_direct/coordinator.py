@@ -10,7 +10,7 @@ from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 from homeassistant.util import dt as dt_util
 
-from .api import AirReading, InPostAirError, fetch_reading
+from .api import AirReading, InPostAirClient, InPostAirError
 from .const import CONF_LOCKER_CODE, CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL, DOMAIN, STALE_AFTER
 
 _LOGGER = logging.getLogger(__name__)
@@ -33,12 +33,12 @@ class InPostAirCoordinator(DataUpdateCoordinator[AirReading]):
             name=f"{DOMAIN} {self.code}",
             update_interval=timedelta(minutes=minutes) if minutes else DEFAULT_SCAN_INTERVAL,
         )
-        self._session = async_get_clientsession(hass)
+        self.client = InPostAirClient(async_get_clientsession(hass))
         self._stale_logged = False
 
     async def _async_update_data(self) -> AirReading:
         try:
-            reading = await fetch_reading(self._session, self.code)
+            reading = await self.client.async_get_reading(self.code)
         except InPostAirError as err:
             raise UpdateFailed(str(err)) from err
         stale = reading.is_stale(dt_util.utcnow(), STALE_AFTER)

@@ -13,22 +13,20 @@ from homeassistant.components.sensor import (
     SensorStateClass,
 )
 from homeassistant.const import (
-    CONCENTRATION_MICROGRAMS_PER_CUBIC_METER,
+    ATTR_LATITUDE,
+    ATTR_LONGITUDE,
     PERCENTAGE,
     EntityCategory,
     UnitOfPressure,
     UnitOfTemperature,
 )
 from homeassistant.core import HomeAssistant
-from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
-from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .api import AirReading
-from .const import DOMAIN
+from .const import CONF_ADDRESS, CONF_CITY, CONF_LATITUDE, CONF_LONGITUDE
 from .coordinator import InPostAirConfigEntry, InPostAirCoordinator
-
-ATTRIBUTION = "Data from InPost (unofficial API)"
+from .entity import InPostAirEntity
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -39,6 +37,8 @@ class AirSensorDescription(SensorEntityDescription):
     attrs_fn: Callable[[AirReading], dict[str, Any]] | None = None
     # Measurement entities go unavailable when the API serves stale data.
     honors_staleness: bool = True
+    # Carries the locker's coordinates so it can be shown on a Map card.
+    with_location: bool = False
 
 
 def _measurement(
@@ -47,6 +47,7 @@ def _measurement(
     unit: str,
     precision: int,
     device_class: SensorDeviceClass,
+    with_location: bool = False,
 ) -> AirSensorDescription:
     # Entity name comes from the (translated) device class name.
     return AirSensorDescription(
@@ -57,6 +58,7 @@ def _measurement(
         suggested_display_precision=precision,
         value_fn=lambda r: r.values.get(api_name),
         attrs_fn=lambda r: {"level": r.levels.get(api_name)},
+        with_location=with_location,
     )
 
 
@@ -72,25 +74,36 @@ def _standard(key: str, pollutant: str) -> AirSensorDescription:
     )
 
 
+try:  # HA 2026.x+; the old constant is deprecated (removal planned for 2027.8)
+    from homeassistant.const import UnitOfDensity
+
+    _UG: str = UnitOfDensity.MICROGRAMS_PER_CUBIC_METER
+except ImportError:  # older HA
+    from homeassistant.const import CONCENTRATION_MICROGRAMS_PER_CUBIC_METER as _UG
+
 # Unique IDs are f"{code}_{key}"; keep existing keys stable to preserve history.
 SENSORS: tuple[AirSensorDescription, ...] = (
-    _measurement("temperature", "TEMPERATURE", UnitOfTemperature.CELSIUS, 1, SensorDeviceClass.TEMPERATURE),
+    _measurement("temperature", "TEMPERATURE", UnitOfTemperature.CELSIUS, 1, SensorDeviceClass.TEMPERATURE, True),
     _measurement("humidity", "HUMIDITY", PERCENTAGE, 0, SensorDeviceClass.HUMIDITY),
     _measurement("pressure", "PRESSURE", UnitOfPressure.HPA, 0, SensorDeviceClass.ATMOSPHERIC_PRESSURE),
-    _measurement("pm1", "PM1", CONCENTRATION_MICROGRAMS_PER_CUBIC_METER, 1, SensorDeviceClass.PM1),
-    _measurement("pm25", "PM25", CONCENTRATION_MICROGRAMS_PER_CUBIC_METER, 1, SensorDeviceClass.PM25),
-    _measurement("pm4", "PM4", CONCENTRATION_MICROGRAMS_PER_CUBIC_METER, 1, SensorDeviceClass.PM4),
-    _measurement("pm10", "PM10", CONCENTRATION_MICROGRAMS_PER_CUBIC_METER, 1, SensorDeviceClass.PM10),
+    _measurement("pm1", "PM1", _UG, 1, SensorDeviceClass.PM1),
+    _measurement("pm25", "PM25", _UG, 1, SensorDeviceClass.PM25),
+    _measurement("pm4", "PM4", _UG, 1, SensorDeviceClass.PM4),
+    _measurement("pm10", "PM10", _UG, 1, SensorDeviceClass.PM10),
+    _measurement("no2", "NO2", _UG, 1, SensorDeviceClass.NITROGEN_DIOXIDE),
+    _measurement("o3", "O3", _UG, 1, SensorDeviceClass.OZONE),
     AirSensorDescription(
         key="air_index",
         translation_key="air_index",
         state_class=SensorStateClass.MEASUREMENT,
-        suggested_display_precision=0,
+        suggested_display_precision=1,
         value_fn=lambda r: r.index_value,
-        attrs_fn=lambda r: {"level": r.index_level, "index": r.index_name},
+        attrs_fn=lambda r: {"level": r.index_level, "index": r.index_name, "sensor_generation": r.sensor_origin},
     ),
     _standard("pm25_who", "PM25"),
     _standard("pm10_who", "PM10"),
+    _standard("no2_who", "NO2"),
+    _standard("o3_who", "O3"),
     AirSensorDescription(
         key="measurement_end",
         translation_key="measurement_end",
@@ -108,42 +121,33 @@ async def async_setup_entry(
     entry: InPostAirConfigEntry,
     async_add_entities: AddEntitiesCallback,
 ) -> None:
-    """Register entities for the sensors this locker actually reports."""
+    """Register entities for the values this locker actually reports."""
     coordinator = entry.runtime_data
-    reading = coordinator.data
     async_add_entities(
         InPostAirSensor(coordinator, description)
         for description in SENSORS
-        if description.value_fn(reading) is not None
+        if description.value_fn(coordinator.data) is not None
     )
 
 
-class InPostAirSensor(CoordinatorEntity[InPostAirCoordinator], SensorEntity):
+class InPostAirSensor(InPostAirEntity, SensorEntity):
     """One value reported by a Paczkomat."""
 
-    _attr_has_entity_name = True
-    _attr_attribution = ATTRIBUTION
     entity_description: AirSensorDescription
 
     def __init__(self, coordinator: InPostAirCoordinator, description: AirSensorDescription) -> None:
-        super().__init__(coordinator)
+        super().__init__(coordinator, description.key)
         self.entity_description = description
-        code = coordinator.code
-        self._attr_unique_id = f"{code}_{description.key}"
-        self._attr_device_info = DeviceInfo(
-            identifiers={(DOMAIN, code)},
-            name=f"InPost Air {code}",
-            manufacturer="InPost",
-            model="Paczkomat air sensors",
-            serial_number=code,
-        )
 
     @property
     def available(self) -> bool:
         """Unavailable on failed update, missing value or (for measurements) stale data."""
-        if not super().available or self.native_value is None:
+        if self.entity_description.honors_staleness:
+            if not super().available:
+                return False
+        elif not self.coordinator.last_update_success:
             return False
-        return not (self.entity_description.honors_staleness and self.coordinator.is_stale)
+        return self.native_value is not None
 
     @property
     def native_value(self) -> float | datetime | None:
@@ -152,7 +156,14 @@ class InPostAirSensor(CoordinatorEntity[InPostAirCoordinator], SensorEntity):
 
     @property
     def extra_state_attributes(self) -> dict[str, Any] | None:
-        """Expose qualitative level / standard name from the API."""
-        if self.entity_description.attrs_fn is None:
-            return None
-        return self.entity_description.attrs_fn(self.coordinator.data)
+        """Qualitative level / standard name from the API, plus location for the map."""
+        desc = self.entity_description
+        attrs = desc.attrs_fn(self.coordinator.data) if desc.attrs_fn else {}
+        if desc.with_location:
+            data = self.coordinator.config_entry.data
+            if data.get(CONF_LATITUDE) is not None and data.get(CONF_LONGITUDE) is not None:
+                attrs[ATTR_LATITUDE] = data[CONF_LATITUDE]
+                attrs[ATTR_LONGITUDE] = data[CONF_LONGITUDE]
+            if address := ", ".join(p for p in (data.get(CONF_CITY), data.get(CONF_ADDRESS)) if p):
+                attrs["address"] = address
+        return attrs or None
