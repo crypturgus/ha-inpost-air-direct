@@ -1,0 +1,36 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Dodaj Paczkomat InPost Air",
+        "description": "Podaj kod Paczkomatu (np. DZI11M).",
+        "data": {"locker_code": "Kod Paczkomatu"},
+        "data_description": {"locker_code": "Kod widoczny na Paczkomacie lub na mapie InPost."}
+      }
+    },
+    "error": {
+      "cannot_connect": "Brak połączenia z API InPost. Spróbuj ponownie później.",
+      "invalid_code": "Nieprawidłowy kod Paczkomatu (3–32 litery i cyfry).",
+      "not_found": "Ten Paczkomat nie istnieje lub nie ma czujników powietrza.",
+      "unknown": "Nieoczekiwany błąd, sprawdź log Home Assistant."
+    },
+    "abort": {"already_configured": "Ten Paczkomat został już dodany."}
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Opcje InPost Air",
+        "data": {"scan_interval": "Interwał odpytywania"},
+        "data_description": {"scan_interval": "Jak często pytać API, w minutach. API publikuje wartości uśrednione, więc odpytywanie częściej niż co kilka minut niewiele daje."}
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "air_index": {"name": "Indeks jakości powietrza"},
+      "pm25_who": {"name": "PM2.5 względem normy WHO"},
+      "pm10_who": {"name": "PM10 względem normy WHO"},
+      "measurement_end": {"name": "Koniec okna pomiaru"}
+    }
+  }
+}

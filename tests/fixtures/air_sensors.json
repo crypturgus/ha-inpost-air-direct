@@ -1,0 +1,63 @@
+{
+    "current": {
+        "fromDateTime": "2026-11-22T15:45:55.738Z",
+        "tillDateTime": "2026-11-22T17:00:55.738Z",
+        "values": [
+            {
+                "name": "PM1",
+                "value": 7.308225798581996,
+                "level": null
+            },
+            {
+                "name": "PM25",
+                "value": 13.852913581268895,
+                "level": "GOOD"
+            },
+            {
+                "name": "PM4",
+                "value": 16.08203306362529,
+                "level": null
+            },
+            {
+                "name": "PM10",
+                "value": 17.541432939357783,
+                "level": "VERY_GOOD"
+            },
+            {
+                "name": "TEMPERATURE",
+                "value": 2.4227949166666662,
+                "level": null
+            },
+            {
+                "name": "HUMIDITY",
+                "value": 99.997724275,
+                "level": null
+            },
+            {
+                "name": "PRESSURE",
+                "value": 979.8584728333332,
+                "level": null
+            }
+        ],
+        "index": {
+            "name": "PIJP",
+            "value": 20.684466892062634,
+            "level": "GOOD"
+        },
+        "standards": [
+            {
+                "name": "WHO",
+                "pollutant": "PM25",
+                "limit": 25.0,
+                "percent": 55.41165432507558
+            },
+            {
+                "name": "WHO",
+                "pollutant": "PM10",
+                "limit": 50.0,
+                "percent": 35.082865878715566
+            }
+        ]
+    },
+    "sensorOrigin": 2
+}

@@ -1,0 +1,36 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Add InPost Air locker",
+        "description": "Enter the Paczkomat identifier (e.g. DZI11M).",
+        "data": {"locker_code": "Locker code"},
+        "data_description": {"locker_code": "Code printed on the Paczkomat or shown on the InPost map."}
+      }
+    },
+    "error": {
+      "cannot_connect": "Cannot reach the InPost API. Try again later.",
+      "invalid_code": "Invalid locker code (3–32 letters and digits).",
+      "not_found": "This locker does not exist or has no air sensors.",
+      "unknown": "Unexpected error, see the Home Assistant log."
+    },
+    "abort": {"already_configured": "This locker is already configured."}
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "InPost Air options",
+        "data": {"scan_interval": "Polling interval"},
+        "data_description": {"scan_interval": "How often to query the API, in minutes. The API publishes aggregated values, so polling more often than every few minutes brings little."}
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "air_index": {"name": "Air quality index"},
+      "pm25_who": {"name": "PM2.5 of WHO limit"},
+      "pm10_who": {"name": "PM10 of WHO limit"},
+      "measurement_end": {"name": "Measurement window end"}
+    }
+  }
+}
