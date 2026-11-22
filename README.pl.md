@@ -1,3 +1,5 @@
+<img src="custom_components/inpost_air_direct/brand/icon.png" alt="" width="96" align="right">
+
 # InPost Air Direct — Home Assistant
 
 Polski | [English](README.md)
