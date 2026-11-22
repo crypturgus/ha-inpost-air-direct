@@ -1,4 +1,4 @@
-"""Integration setup, sensor, weather and diagnostics tests."""
+"""Integration setup, sensor and diagnostics tests."""
 from __future__ import annotations
 
 from datetime import timedelta
@@ -65,14 +65,14 @@ async def test_sensors(hass: HomeAssistant, entry, api, freezer) -> None:
     assert _device(hass, entry).model == "Air sensor (gen. 2)"
 
 
-async def test_weather(hass: HomeAssistant, entry, api, freezer) -> None:
+async def test_old_weather_entity_removed(hass: HomeAssistant, entry, api, freezer) -> None:
     freezer.move_to(FRESH_NOW)
+    registry = er.async_get(hass)
+    old = registry.async_get_or_create("weather", DOMAIN, f"{CODE}_weather", config_entry=entry)
     await _setup(hass, entry)
-    weather = _state(hass, "weather", "weather")
-    assert weather.entity_id == "weather.inpost_air_dzi11m"
-    assert weather.attributes["temperature"] == pytest.approx(2.4)
-    assert weather.attributes["humidity"] == 100
-    assert weather.attributes["pressure"] == pytest.approx(979.9, abs=0.1)
+    assert registry.async_get(old.entity_id) is None
+    assert hass.states.get(old.entity_id) is None
+    assert not hass.states.async_entity_ids("weather")
 
 
 async def test_gen1_with_gases(hass: HomeAssistant, entry, aioclient_mock: AiohttpClientMocker, freezer) -> None:
@@ -91,7 +91,7 @@ async def test_gen1_with_gases(hass: HomeAssistant, entry, aioclient_mock: Aioht
     assert _device(hass, entry).model == "Air sensor (gen. 1)"
 
 
-async def test_no_temperature_no_weather(hass: HomeAssistant, entry, aioclient_mock: AiohttpClientMocker, freezer) -> None:
+async def test_only_reported_sensors_created(hass: HomeAssistant, entry, aioclient_mock: AiohttpClientMocker, freezer) -> None:
     freezer.move_to(FRESH_NOW)
     aioclient_mock.get(URL, json={"current": {"values": [{"name": "PM25", "value": 10}], "tillDateTime": "2026-11-22T17:00:00Z"}})
     await _setup(hass, entry)
@@ -103,7 +103,6 @@ async def test_stale_data(hass: HomeAssistant, entry, api, freezer) -> None:
     freezer.move_to("2026-11-22T20:00:00+00:00")  # 3 h after window end
     await _setup(hass, entry)
     assert _state(hass, "temperature").state == STATE_UNAVAILABLE
-    assert _state(hass, "weather", "weather").state == STATE_UNAVAILABLE
     assert _state(hass, "measurement_end").state == "2026-11-22T17:00:55+00:00"
 
 

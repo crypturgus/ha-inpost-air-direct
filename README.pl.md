@@ -14,7 +14,6 @@ Integracja Home Assistant pobierająca **temperaturę** i jakość powietrza z c
 - Można też szukać **po miejscowości** (wielkość liter i polskie znaki nie mają znaczenia: `lodz` znajdzie Łódź) albo wpisać **kod Paczkomatu**.
 - Paczkomat musi podawać temperaturę, żeby dało się go dodać. Jeśli jego ostatnie dane są stare, trzeba to potwierdzić.
 - Sensory: temperatura, wilgotność, ciśnienie, PM1, PM2.5, PM4, PM10, NO2, O3 (tylko te, które Paczkomat podaje), indeks jakości powietrza, procent norm WHO, koniec okna pomiaru.
-- **Encja pogody (weather)** dla każdego Paczkomatu (temperatura, wilgotność, ciśnienie) do kart pogodowych.
 - **Wykrywanie nieaktualnych danych:** jeśli okno pomiaru skończyło się ponad 2 godziny temu, encje pomiarowe stają się niedostępne. Niektóre Paczkomaty podają dane sprzed wielu dni.
 - Paczkomaty można pokazać na karcie Mapa (sensor temperatury ma atrybuty `latitude` i `longitude`).
 - Konfiguracja w interfejsie, wiele Paczkomatów, regulowany interwał odpytywania (domyślnie 5 min), pobieranie diagnostyki.
@@ -38,7 +37,6 @@ Identyfikatory poniżej dotyczą Paczkomatu `DZI11M`. Tworzone są tylko encje d
 
 | Encja | Przykładowe ID | Uwagi |
 |---|---|---|
-| Pogoda | `weather.inpost_air_dzi11m` | temperatura, wilgotność, ciśnienie; bez prognozy i stanu nieba |
 | Temperatura | `sensor.inpost_air_dzi11m_temperature` | °C; atrybuty `latitude`, `longitude`, `address` |
 | Wilgotność, ciśnienie | `..._humidity`, `..._atmospheric_pressure` | %, hPa |
 | PM1, PM2.5, PM4, PM10, NO2, O3 | `..._pm2_5`, ... | μg/m³; atrybut `level` (np. `GOOD`) |

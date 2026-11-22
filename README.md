@@ -14,7 +14,6 @@ Custom integration for **temperature** and air-quality readings from sensors mou
 - Or search **by city** (letter case and Polish characters don't matter: `lodz` finds Łódź) or enter the **locker code**.
 - A locker must report a temperature before it is added; lockers whose last data is old require confirmation.
 - Sensors: temperature, humidity, pressure, PM1, PM2.5, PM4, PM10, NO2, O3 (only what the locker reports), air quality index, % of WHO limits, measurement window end.
-- A **weather entity** per locker (temperature, humidity, pressure) for weather cards.
 - **Stale-data detection:** when the last measurement window ended more than 2 hours ago, measurement entities become unavailable (some lockers keep serving data that is days old).
 - Lockers can be shown on a Map card (the temperature sensor carries `latitude`/`longitude`).
 - UI configuration, multiple lockers, adjustable polling interval (default 5 min), diagnostics download.
@@ -38,7 +37,6 @@ Entity IDs below are for locker `DZI11M`; only values the locker reports are cre
 
 | Entity | Example ID | Notes |
 |---|---|---|
-| Weather | `weather.inpost_air_dzi11m` | temperature, humidity, pressure; no forecast/condition |
 | Temperature | `sensor.inpost_air_dzi11m_temperature` | °C; attributes `latitude`, `longitude`, `address` |
 | Humidity, Pressure | `..._humidity`, `..._atmospheric_pressure` | %, hPa |
 | PM1, PM2.5, PM4, PM10, NO2, O3 | `..._pm2_5`, ... | μg/m³; attribute `level` (e.g. `GOOD`) |

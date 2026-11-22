@@ -4,6 +4,16 @@ All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses
 [Semantic Versioning](https://semver.org/).
 
+## [0.4.0] - 2026-11-22
+
+### Added
+- Integration logo (`brand/icon.png`), shown by Home Assistant versions that load brand images from custom integrations.
+
+### Removed
+- The `weather` entity. The InPost API has no sky condition, and in Home Assistant the condition is the
+  weather entity's state, so it always showed "Unknown". Use the temperature sensor (e.g. a Tile card) instead.
+  The entity is removed from the entity registry automatically on upgrade.
+
 ## [0.3.0] - 2026-11-22
 
 ### Added
@@ -38,6 +48,7 @@ All notable changes to this project are documented here. The format follows
 
 - Initial version.
 
+[0.4.0]: https://github.com/crypturgus/ha-inpost-air-direct/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/crypturgus/ha-inpost-air-direct/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/crypturgus/ha-inpost-air-direct/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/crypturgus/ha-inpost-air-direct/releases/tag/v0.1.0

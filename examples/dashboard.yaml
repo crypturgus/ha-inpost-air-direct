@@ -1,9 +1,9 @@
 # Dashboard cards for one locker (replace dzi11m with your locker code, lowercase).
 
-# Current conditions
-type: weather-forecast
-entity: weather.inpost_air_dzi11m
-show_forecast: false
+# Current temperature
+type: tile
+entity: sensor.inpost_air_dzi11m_temperature
+features_position: bottom
 ---
 # Temperature history
 type: history-graph
